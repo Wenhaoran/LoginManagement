@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysFunctionMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap" type="cn.digitalpublishing.po.system.SysFunction">
+		<id column="FUN_ID" property="id" jdbcType="BIGINT" />
+		<result column="FUN_NAME" property="name" jdbcType="VARCHAR" />
+		<result column="FUN_CODE" property="code" jdbcType="VARCHAR" />
+		<result column="FUN_PATH" property="path" jdbcType="VARCHAR" />
+		<result column="PAGE_ID" property="pageId" jdbcType="VARCHAR" />
+		<result column="PAGE_NAME" property="pageName" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		FUN_ID, FUN_NAME, FUN_CODE, FUN_PATH, PAGE_ID
+	</sql>
+	
+	<!-- SYS_FUNCTION -->
+	
+	<update id="updateById" parameterType="cn.digitalpublishing.po.system.SysFunction">
+		update SYS_FUNCTION
+		<set>
+			<if test="name != null">
+				FUN_NAME = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="code != null">
+				FUN_CODE = #{code,jdbcType=VARCHAR},
+			</if>
+			<if test="path != null">
+				FUN_PATH = #{path,jdbcType=VARCHAR},
+			</if>
+			<if test="pageId != null">
+				PAGE_ID = #{pageId,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where FUN_ID = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		SYS_FUNCTION
+		where FUN_ID = #{id,jdbcType=VARCHAR}
+	</delete>
+	
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysFunction">
+		insert into SYS_FUNCTION
+		(FUN_ID, 
+		FUN_NAME,
+		FUN_CODE,
+		FUN_PATH,
+		PAGE_ID,
+		inserttime)
+		values
+		(replace(uuid(),'-',''), 
+		#{name,jdbcType=VARCHAR},
+		#{code,jdbcType=VARCHAR},
+		#{path,jdbcType=VARCHAR},
+		#{pageId,jdbcType=VARCHAR},
+		now() )
+	</insert>
+
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_FUNCTION
+		where FUN_ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+			a.FUN_ID, 
+			a.FUN_NAME, 
+			a.FUN_CODE, 
+			a.FUN_PATH, 
+			a.PAGE_ID,
+			c.page_name as page_name
+		from 
+			SYS_FUNCTION a
+		left join SYS_PAGE c on a.PAGE_ID = c.PAGE_ID
+		where 
+			1=1
+		<if test="id != null">
+			and a.FUN_ID = #{id,jdbcType=VARCHAR}
+		</if>
+		<if test="name != null">
+			and a.FUN_NAME = #{name,jdbcType=VARCHAR}
+		</if>
+		<if test="code != null">
+			and a.FUN_CODE = #{code,jdbcType=VARCHAR}
+		</if>
+		<if test="pageId != null">
+			and a.PAGE_ID = #{pageId,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+	<!-- 分页查询发件箱管理信息 -->
+	<select id="findPageCondition" resultMap="BaseResultMap"
+		parameterType="PageInfo">
+		select
+			a.FUN_ID, 
+			a.FUN_NAME, 
+			a.FUN_CODE, 
+			(case when b.PAGE_SPECIAL is null or b.PAGE_SPECIAL ='' then concat(concat(b.PAGE_PATH,'#'),a.FUN_CODE) else concat(concat(concat(concat(b.PAGE_PATH,'#'),b.PAGE_SPECIAL),'#'),a.FUN_CODE) end) as FUN_PATH,
+			a.PAGE_ID ,
+			b.PAGE_NAME as PAGE_NAME
+		from SYS_FUNCTION a
+		left join SYS_PAGE b on a.PAGE_ID = b.PAGE_ID
+		where 1 = 1
+		<if test="condition.roleId != null">
+			and a.FUN_ID in 
+			( select d.FUN_ID from SYS_RF_RELATIONSHIP d where d.ROLE_ID <![CDATA[=]]> #{condition.roleId, jdbcType=VARCHAR})
+		</if>
+
+		<if test="condition.code != null"> 
+			and a.FUN_CODE like #{condition.code, jdbcType=VARCHAR}
+		</if>
+
+		<if test="condition.name != null"> 
+			and a.FUN_NAME like #{condition.name, jdbcType=VARCHAR}
+		</if>
+
+		<if test="condition.pageId != null">
+			and a.PAGE_ID <![CDATA[=]]>
+			#{condition.pageId, jdbcType=VARCHAR}
+		</if>
+	</select>
+
+</mapper>

@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysResourceMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap" type="cn.digitalpublishing.po.system.SysResource">
+		<id column="RESOURCE_ID" property="id" jdbcType="BIGINT" />
+		<result column="RESOURCE_NAME" property="name" jdbcType="VARCHAR" />
+		<result column="RESOURCE_CODE" property="code" jdbcType="VARCHAR" />
+		<result column="RESOURCE_LINK" property="link" jdbcType="VARCHAR" />
+		<result column="RESOURCE_STATUS" property="status" jdbcType="TINYINT" />
+		<result column="RESOURCE_ISLEAF" property="leaf" jdbcType="TINYINT" />
+		<result column="RESOURCE_ORDER" property="order" jdbcType="TINYINT" />
+		<result column="RESOURCE_TYPE" property="type" jdbcType="TINYINT" />
+		<result column="RESOURCE_LOCALE" property="locale" jdbcType="VARCHAR" />
+		<result column="RESOURCE_FULL" property="full" jdbcType="TINYINT" />
+		<!-- <result column="chooseType" property="chooseType" jdbcType="TINYINT"/> 
+			<result column="treeCode" property="treeCode" jdbcType="VARCHAR"/> -->
+		<result column="SYSTEM_ID" property="systemId" jdbcType="VARCHAR" />
+		<result column="COMPONENT_ID" property="componentId" jdbcType="VARCHAR" />
+		<result column="PARENT_ID" property="parentResourceId" jdbcType="VARCHAR" />
+
+		<result column="SYSTEM_NAME" property="systemName" jdbcType="VARCHAR" />
+		<result column="COMPONENT_NAME" property="componentName" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List"><!-- chooseType,treeCode, -->
+		RESOURCE_ID, RESOURCE_NAME, RESOURCE_CODE, RESOURCE_LINK,
+		RESOURCE_STATUS, RESOURCE_ISLEAF, RESOURCE_ORDER,
+		RESOURCE_TYPE,
+		RESOURCE_LOCALE, RESOURCE_FULL,SYSTEM_ID,COMPONENT_ID,PARENT_ID
+	</sql>
+	
+	<!-- sys_resource -->
+	
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		sys_resource
+		where
+		RESOURCE_ID = #{resourceId,jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 插入账户信息 -->
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysResource">
+		insert into sys_resource
+		(RESOURCE_ID, 
+		RESOURCE_NAME, 
+		RESOURCE_CODE, 
+		RESOURCE_LINK,
+		RESOURCE_STATUS, 
+		RESOURCE_ISLEAF, 
+		RESOURCE_ORDER,
+		RESOURCE_TYPE,
+		RESOURCE_LOCALE, 
+		RESOURCE_FULL,
+		SYSTEM_ID,
+		COMPONENT_ID,
+		PARENT_ID,
+		inserttime)
+		values
+		(replace(uuid(),'-',''), 
+		#{name,jdbcType=VARCHAR}, 
+		#{code,jdbcType=VARCHAR},
+		#{link,jdbcType=VARCHAR},
+		#{status,jdbcType=TINYINT},
+		#{leaf,jdbcType=TINYINT},
+		#{order,jdbcType=TINYINT},
+		#{type,jdbcType=TINYINT},
+		#{locale,jdbcType=VARCHAR},
+		#{full,jdbcType=TINYINT},
+		#{systemId,jdbcType=VARCHAR},
+		#{componentId,jdbcType=VARCHAR},
+		#{parentResourceId,jdbcType=VARCHAR},
+		NOW())
+	</insert>
+	
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from sys_resource
+		where RESOURCE_ID = #{id,jdbcType=VARCHAR}
+	</select>
+
+	<update id="updateById" parameterType="cn.digitalpublishing.po.system.SysResource">
+		update sys_resource
+		<set>
+			<if test="name != null">
+				RESOURCE_NAME = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="code != null">
+				RESOURCE_CODE = #{code,jdbcType=VARCHAR},
+			</if>
+			<if test="link != null">
+				RESOURCE_LINK = #{link,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				RESOURCE_STATUS = #{status,jdbcType=TINYINT},
+			</if>
+			<if test="componentId != null">
+				COMPONENT_ID = #{componentId,jdbcType=VARCHAR},
+			</if>
+			<if test="parentResourceId != null">
+				PARENT_ID = #{parentResourceId,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where RESOURCE_ID = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<!-- 根据systemId 系统ID ，查询 当前系统下所有的资源 的 根节点 -->
+	<select id="findResourceBySysIdAndPidNull" resultMap="BaseResultMap" parameterType="java.lang.String">
+		SELECT
+			<include refid="Base_Column_List" />
+		FROM
+			sys_resource
+		WHERE 
+			1 = 1
+		AND PARENT_ID is null
+		AND SYSTEM_ID <![CDATA[=]]>
+		#{systemId,jdbcType=VARCHAR}
+	</select>
+	
+	
+	<!-- 根据 角色ID 和 系统ID 查询资源信息 -->
+	<select id="getResourceListByRoleId" resultMap="BaseResultMap" parameterType="java.util.Map">
+		SELECT
+		a.RESOURCE_ID, a.RESOURCE_NAME, a.RESOURCE_CODE,
+		a.RESOURCE_LINK,
+		a.RESOURCE_STATUS, a.RESOURCE_ISLEAF,
+		a.RESOURCE_ORDER,
+		a.RESOURCE_TYPE, a.RESOURCE_LOCALE,
+		a.RESOURCE_FULL,a.SYSTEM_ID,a.COMPONENT_ID,a.PARENT_ID
+		FROM
+		sys_resource a
+		LEFT JOIN sys_rr_relationship b ON a.resource_id = b.resource_id
+		WHERE 1 = 1
+		<if test="roleId != null"> and b.role_id = #{roleId} </if>
+		<if test="sysId != null"> AND a.system_id = #{sysId} </if>
+	</select>
+	
+	<!-- 根据 角色ID 和 系统ID 查询资源信息 -->
+	<select id="getResourceListByRoleIdAndPidIsNull" resultMap="BaseResultMap" parameterType="java.util.Map">
+		SELECT
+		a.RESOURCE_ID, a.RESOURCE_NAME, a.RESOURCE_CODE,
+		a.RESOURCE_LINK,
+		a.RESOURCE_STATUS, a.RESOURCE_ISLEAF,
+		a.RESOURCE_ORDER,
+		a.RESOURCE_TYPE, a.RESOURCE_LOCALE,
+		a.RESOURCE_FULL,a.SYSTEM_ID,a.COMPONENT_ID,a.PARENT_ID
+		FROM
+		sys_resource a
+		LEFT JOIN sys_rr_relationship b ON a.resource_id = b.resource_id
+		WHERE 1 = 1
+		AND PARENT_ID is null 
+		<if test="roleId != null"> and b.role_id = #{roleId} </if>
+		<if test="sysId != null"> AND a.system_id = #{sysId} </if>
+	</select>
+
+	<select id="findResourceByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+		a.RESOURCE_ID, a.RESOURCE_NAME, a.RESOURCE_CODE, a.RESOURCE_LINK,
+		a.RESOURCE_STATUS,
+		a.RESOURCE_ISLEAF, a.RESOURCE_ORDER,
+		a.RESOURCE_TYPE,
+		a.RESOURCE_LOCALE,
+		a.RESOURCE_FULL,a.SYSTEM_ID,a.COMPONENT_ID,a.PARENT_ID,
+		b.SYSTEM_NAME
+		AS SYSTEM_NAME,
+		c.COMPONENT_NAME as COMPONENT_NAME
+
+		from
+		sys_resource a
+		LEFT JOIN SYS_SYSTEM b on a.SYSTEM_ID = b.SYSTEM_ID 
+		LEFT JOIN SYS_COMPONENT c on  a.COMPONENT_ID = c.COMPONENT_ID 
+		where 1 = 1
+		<if test="id != null"> and a.RESOURCE_ID = #{id}</if>
+		<if test="parentId != null"> and a.PARENT_ID = #{parentId}</if>
+		<if test="systemId != null"> and a.SYSTEM_ID = #{systemId}</if>
+		<if test="parentIdIsNull != null"> and a.PARENT_ID is null</if>
+	</select>
+
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+		a.RESOURCE_ID, 
+		a.RESOURCE_NAME, 
+		a.RESOURCE_CODE, 
+		a.RESOURCE_LINK,
+		a.RESOURCE_STATUS,
+		a.RESOURCE_ISLEAF, 
+		a.RESOURCE_ORDER,
+		a.RESOURCE_TYPE,
+		a.RESOURCE_LOCALE,
+		a.RESOURCE_FULL,
+		a.SYSTEM_ID,
+		a.COMPONENT_ID,
+		a.PARENT_ID,
+		b.SYSTEM_NAME AS SYSTEM_NAME,
+		c.COMPONENT_NAME as COMPONENT_NAME
+
+		from
+		sys_resource a
+		
+		LEFT JOIN SYS_COMPONENT c on  a.COMPONENT_ID = c.COMPONENT_ID	
+		LEFT JOIN SYS_SYSTEM b on a.SYSTEM_ID = b.SYSTEM_ID
+		
+		where 1 = 1
+		<if test="roleId != null">
+			AND a.RESOURCE_ID in
+			( select d.RESOURCE_ID from SYS_RR_RELATIONSHIP d where d.role_id <![CDATA[=]]> #{roleId, jdbcType=VARCHAR})
+		</if>
+		<if test="parentId != null">
+			AND a.PARENT_ID <![CDATA[=]]>
+			#{parentId, jdbcType=VARCHAR}
+		</if>
+		<if test="componentId != null">
+			AND a.COMPONENT_ID <![CDATA[=]]>
+			#{componentId, jdbcType=VARCHAR}
+		</if>
+		<if test="link != null">
+			AND a.RESOURCE_LINK <![CDATA[=]]>
+			#{link, jdbcType=VARCHAR}
+		</if>
+		<if test="systemId != null">
+			AND a.SYSTEM_ID <![CDATA[=]]>
+			#{systemId, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	
+	<!-- 资源角色 关联查询 分页 -->
+	<select id="findResourcePageConditionByRoleId" resultMap="BaseResultMap" parameterType="PageInfo">
+		select
+		a.RESOURCE_ID, 
+		a.RESOURCE_NAME, 
+		a.RESOURCE_CODE, 
+		a.RESOURCE_LINK,
+		a.RESOURCE_STATUS,
+		a.RESOURCE_ISLEAF, 
+		a.RESOURCE_ORDER,
+		a.RESOURCE_TYPE,
+		a.RESOURCE_LOCALE,
+		a.RESOURCE_FULL,
+		a.SYSTEM_ID,
+		a.COMPONENT_ID,
+		a.PARENT_ID,
+		b.SYSTEM_NAME AS SYSTEM_NAME,
+		c.COMPONENT_NAME as COMPONENT_NAME
+
+		from 
+		sys_resource a 
+		LEFT JOIN SYS_SYSTEM b on a.SYSTEM_ID = b.SYSTEM_ID 
+		LEFT JOIN SYS_COMPONENT c on  a.COMPONENT_ID = c.COMPONENT_ID 
+		where 1 = 1
+		<if test="condition.roleId != null">
+			AND a.RESOURCE_ID in
+			( select d.RESOURCE_ID from SYS_RR_RELATIONSHIP d where d.role_id <![CDATA[=]]> #{condition.roleId, jdbcType=VARCHAR})
+		</if>
+		<if test="condition.id != null"> 
+			and a.RESOURCE_ID = #{condition.id}
+		</if>
+		<if test="condition.name != null"> 
+			and a.RESOURCE_NAME = #{condition.name}
+		</if>
+		<if test="condition.systemId != null"> 
+			and a.SYSTEM_ID = #{condition.systemId}
+		</if>
+	</select>
+	
+	<!-- 分页查询发件箱管理信息 -->
+	<select id="findResourcePageCondition" resultMap="BaseResultMap" parameterType="PageInfo">
+		select
+			a.RESOURCE_ID, 
+			a.RESOURCE_NAME, 
+			a.RESOURCE_CODE, 
+			a.RESOURCE_LINK,
+			a.RESOURCE_STATUS,
+			a.RESOURCE_ISLEAF, 
+			a.RESOURCE_ORDER,
+			a.RESOURCE_TYPE,
+			a.RESOURCE_LOCALE,
+			a.RESOURCE_FULL,
+			a.SYSTEM_ID,
+			a.COMPONENT_ID,
+			a.PARENT_ID,
+			b.SYSTEM_NAME AS SYSTEM_NAME,
+			c.COMPONENT_NAME as COMPONENT_NAME
+
+		from 
+			sys_resource a 
+		LEFT JOIN 
+				SYS_SYSTEM b 
+			on 
+				a.SYSTEM_ID = b.SYSTEM_ID 
+		LEFT JOIN 
+				SYS_COMPONENT c 
+			on  
+				a.COMPONENT_ID = c.COMPONENT_ID 
+		where 1 = 1
+
+		<if test="condition.id != null"> 
+			and a.RESOURCE_ID = #{condition.id}
+		</if>
+		<if test="condition.parentId != null"> 
+			and a.PARENT_ID = #{condition.parentId}
+		</if>
+		<if test="condition.systemId != null"> 
+			and a.SYSTEM_ID = #{condition.systemId}
+		</if>
+		<if test="parentIdIsNull != null"> 
+			and a.PARENT_ID is null
+		</if>
+	</select>
+</mapper>

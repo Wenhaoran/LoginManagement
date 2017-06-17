@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysAMRSMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap"
+		type="cn.digitalpublishing.po.system.SysAccountModuleRelationship">
+		<id column="r_am_id" property="id" jdbcType="BIGINT" />
+<!-- 		<result column="r_am_location" property="location" jdbcType="TINYINT" />
+		<result column="r_am_move" property="move" jdbcType="TINYINT" />-->
+ 		<result column="account_id" property="accountId" jdbcType="VARCHAR" />
+		<result column="module_id" property="moduleId" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		r_am_id, account_id, module_id
+	</sql>
+	
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		SYS_AM_RELATIONSHIP
+		where r_am_id = #{id,jdbcType=VARCHAR}
+	</delete>
+
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+			<include refid="Base_Column_List" />
+		from
+			SYS_AM_RELATIONSHIP
+		where
+			1=1
+		<if test="accountId != null">
+			and ACCOUNT_ID = #{accountId,jdbcType=VARCHAR}
+		</if>
+		<if test="moduleId != null">
+			and module_id = #{moduleId,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysAccountModuleRelationship">
+		insert into SYS_AM_RELATIONSHIP
+		(r_am_id, account_id, module_id)
+		values
+		(replace(uuid(),'-',''), #{accountId,jdbcType=VARCHAR}, #{moduleId,jdbcType=VARCHAR})
+	</insert>
+
+</mapper>

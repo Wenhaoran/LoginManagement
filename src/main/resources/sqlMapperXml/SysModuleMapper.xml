@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysModuleMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+	<!-- SYS_MODULE -->
+	<resultMap id="BaseResultMap" type="cn.digitalpublishing.po.system.SysModule">
+		<id column="MODULE_ID" property="id" jdbcType="BIGINT" />
+		<result column="MODULE_NAME" property="name" jdbcType="VARCHAR" />
+		<result column="MODULE_I18N" property="i18n" jdbcType="VARCHAR" />
+		<result column="MODULE_LINK" property="link" jdbcType="VARCHAR" />
+		<result column="MODULE_ICON" property="icon" jdbcType="VARCHAR" />
+		<result column="MODULE_MORE" property="more" jdbcType="VARCHAR" />
+		<result column="MODULE_MUST" property="must" jdbcType="TINYINT" />
+		<result column="MODULE_HEIGHT" property="height" jdbcType="DOUBLE" />
+		<result column="MODULE_WIDTH" property="width" jdbcType="DOUBLE" />
+		<result column="COMPONENT_ID" property="componentId" jdbcType="VARCHAR" />
+		<result column="COMPONENT_NAME" property="componentName" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		MODULE_ID, MODULE_NAME, MODULE_I18N, MODULE_LINK, MODULE_ICON, MODULE_MORE,
+		MODULE_MUST, MODULE_HEIGHT, MODULE_WIDTH, COMPONENT_ID
+	</sql>
+	
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+	    select 
+	    	<include refid="Base_Column_List" />
+	    from 
+	    	SYS_MODULE 
+	    where 
+	    	1=1 
+	    <if test="accountId != null">
+			AND MODULE_ID in
+			( select d.MODULE_ID from SYS_AM_RELATIONSHIP d where d.ACCOUNT_ID <![CDATA[=]]> #{accountId, jdbcType=VARCHAR})
+		</if>
+	</select>
+	
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		SYS_MODULE
+		where MODULE_ID = #{id,jdbcType=VARCHAR}
+	</delete>
+	
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_MODULE
+		where MODULE_ID = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 插入账户信息 -->
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysModule">
+		insert into SYS_MODULE
+		(MODULE_ID, 
+		MODULE_NAME, 
+		MODULE_LINK, 
+		MODULE_MUST, 
+		MODULE_HEIGHT, 
+		MODULE_WIDTH)
+		values
+		(replace(uuid(),'-',''), 
+		#{name,jdbcType=VARCHAR}, 
+		#{link,jdbcType=VARCHAR},
+		#{must,jdbcType=TINYINT},
+		#{height,jdbcType=DOUBLE},
+		#{width,jdbcType=DOUBLE})
+	</insert>
+
+	<update id="updateById" parameterType="cn.digitalpublishing.po.system.SysModule">
+		update SYS_MODULE
+		<set>
+			<if test="name != null">
+				MODULE_NAME = #{name,jdbcType=VARCHAR},
+			</if>
+			
+			<if test="link != null">
+				MODULE_LINK = #{link,jdbcType=VARCHAR},
+			</if>
+			
+			<if test="width != null">
+				MODULE_WIDTH = #{width,jdbcType=VARCHAR},
+			</if>
+			
+			<if test="height != null">
+				MODULE_HEIGHT = #{height,jdbcType=VARCHAR},
+			</if>
+			
+			<if test="must != null">
+				MODULE_MUST = #{must,jdbcType=TINYINT},
+			</if>
+
+		</set>
+		where MODULE_ID = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<!-- 分页查询 集合数据  -->
+	<select id="findPageCondition" resultMap="BaseResultMap" parameterType="PageInfo">
+		select
+		a.MODULE_ID, a.MODULE_NAME, a.MODULE_I18N, a.MODULE_LINK, a.MODULE_ICON,
+		a.MODULE_MORE, a.MODULE_MUST, a.MODULE_HEIGHT, a.MODULE_WIDTH,
+		a.COMPONENT_ID, b.COMPONENT_NAME as COMPONENT_NAME
+		from
+		 SYS_MODULE a
+		left join SYS_COMPONENT b on a.COMPONENT_ID = b.COMPONENT_ID
+		where 1 = 1
+		<if test="condition.name != null"> 
+			and a.MODULE_NAME like #{condition.name, jdbcType=VARCHAR}
+		</if>
+
+		<if test="condition.must != null">
+			and a.MODULE_MUST <![CDATA[=]]>
+			#{condition.must, jdbcType=TINYINT}
+		</if>
+
+	</select>
+
+
+</mapper>

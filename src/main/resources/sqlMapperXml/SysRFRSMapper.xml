@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysRFRSMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap"
+		type="cn.digitalpublishing.po.system.SysRoleFunctionRelationship">
+		<id column="R_RF_ID" property="id" jdbcType="BIGINT" />
+		<result column="ROLE_ID" property="roleId" jdbcType="VARCHAR" />
+		<result column="FUN_ID" property="functionId" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		R_RF_ID, ROLE_ID, FUN_ID
+	</sql>
+	
+	<!-- SYS_RF_RELATIONSHIP -->
+	
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysRoleFunctionRelationship">
+		insert into SYS_RF_RELATIONSHIP
+		(R_RF_ID, 
+		ROLE_ID,
+		FUN_ID)
+		values
+		(replace(uuid(),'-',''), 
+		#{roleId,jdbcType=VARCHAR},
+		#{functionId,jdbcType=VARCHAR})
+	</insert>
+	
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		SYS_RF_RELATIONSHIP
+		where R_RF_ID = #{id,jdbcType=VARCHAR}
+	</delete>
+
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+			<include refid="Base_Column_List" />
+		from 
+			SYS_RF_RELATIONSHIP
+		where 
+			1=1
+		<if test="id != null">
+			and R_RF_ID = #{id,jdbcType=VARCHAR}
+		</if>
+		<if test="roleId != null">
+			and ROLE_ID = #{roleId,jdbcType=VARCHAR}
+		</if>
+		<if test="functionId != null">
+			and FUN_ID = #{functionId,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<select id="findListByConditionAll" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+			a.R_RF_ID, 
+			a.ROLE_ID, 
+			a.FUN_ID
+		from 
+			SYS_RF_RELATIONSHIP a
+		left join sys_role g on a.role_id = g.role_id
+		left join SYS_FUNCTION b on a.FUN_ID = b.FUN_ID
+		left join SYS_PAGE c on c.PAGE_ID = b.PAGE_ID
+		left join sys_resource d on c.RESOURCE_ID = d.RESOURCE_ID
+		left join SYS_COMPONENT e on d.COMPONENT_ID = e.COMPONENT_ID
+		where 
+			1=1
+		<if test="id != null">
+			and a.R_RF_ID = #{id,jdbcType=VARCHAR}
+		</if>
+		<if test="roleId != null">
+			and a.ROLE_ID = #{roleId,jdbcType=VARCHAR}
+		</if>
+		<if test="functionId != null">
+			and a.FUN_ID = #{functionId,jdbcType=VARCHAR}
+		</if>
+		<if test="url != null">
+			and d.RESOURCE_LINK = #{url,jdbcType=VARCHAR}
+		</if>
+		<if test="componentCode != null">
+			and e.COMPONENT_DEPLOY_CODE = #{componentCode,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+</mapper>

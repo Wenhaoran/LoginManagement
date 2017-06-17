@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysRoleMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap" type="cn.digitalpublishing.po.system.SysRole">
+		<id column="ROLE_ID" property="id" jdbcType="BIGINT" />
+		<result column="ROLE_NAME" property="name" jdbcType="VARCHAR" />
+		<result column="ROLE_DUTY" property="desc" jdbcType="VARCHAR" />
+		<result column="ROLE_STATUS" property="status" jdbcType="TINYINT" />
+		<result column="SYSTEM_ID" property="systemId" jdbcType="VARCHAR" />
+		<result column="SYSTEM_NAME" property="systemName" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ROLE_ID, ROLE_NAME, ROLE_DUTY, ROLE_STATUS, SYSTEM_ID
+	</sql>
+
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		SYS_ROLE
+		where
+		ROLE_ID = #{id,jdbcType=VARCHAR}
+	</delete>
+
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysRole">
+		insert into SYS_ROLE
+		(ROLE_ID, ROLE_NAME, ROLE_DUTY, ROLE_STATUS, SYSTEM_ID,inserttime)
+		values
+		(replace(uuid(),'-',''), 
+		#{name,jdbcType=VARCHAR},
+		#{desc,jdbcType=VARCHAR},
+		#{status,jdbcType=TINYINT},
+		#{systemId,jdbcType=VARCHAR},
+		NOW())
+	</insert>
+
+	<update id="updateById" parameterType="cn.digitalpublishing.po.system.SysRole">
+		update SYS_ROLE
+		<set>
+			<if test="name != null">
+				ROLE_NAME = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="desc != null">
+				ROLE_DUTY = #{desc,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				ROLE_STATUS = #{status,jdbcType=TINYINT},
+			</if>
+			<if test="systemId != null">
+				SYSTEM_ID = #{systemId,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where ROLE_ID = #{id,jdbcType=VARCHAR}
+	</update>
+
+
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+			a.ROLE_ID, 
+			a.ROLE_NAME, 
+			a.ROLE_DUTY, 
+			a.ROLE_STATUS, 
+			a.SYSTEM_ID
+		from
+			SYS_ROLE a
+		where
+			1=1
+		<if test="accountId != null">
+			AND a.ROLE_ID in
+			( select d.ROLE_ID from SYS_RA_RELATIONSHIP d where d.ACCOUNT_ID <![CDATA[=]]> #{accountId, jdbcType=VARCHAR})
+		</if>
+		<if test="systemId != null"> 
+			and a.SYSTEM_ID = #{systemId, jdbcType=VARCHAR}
+		</if>
+		<if test="status != null"> 
+			and a.ROLE_STATUS = #{status, jdbcType=TINYINT}
+		</if>
+		
+	</select>
+
+
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_ROLE
+		where ROLE_ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	
+	<select id="findAllById" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+		a.ROLE_ID, a.ROLE_NAME, a.ROLE_DUTY, a.ROLE_STATUS, a.SYSTEM_ID ,
+		b.SYSTEM_NAME as SYSTEM_NAME
+		from SYS_ROLE a , SYS_SYSTEM b
+		where 1 = 1
+		and a.SYSTEM_ID = b.SYSTEM_ID
+		<if test="id != null"> and a.ROLE_ID = #{id, jdbcType=VARCHAR}</if>
+		<if test="name != null"> and a.ROLE_NAME = #{name, jdbcType=VARCHAR}</if>
+		<if test="status != null"> and a.ROLE_STATUS = #{status, jdbcType=TINYINT}</if>
+		<if test="systemId != null"> and a.SYSTEM_ID = #{systemId, jdbcType=VARCHAR}</if>
+	</select>
+	
+	
+	
+	<!-- 分页查询发件箱管理信息 -->
+	<select id="findPageCondition" resultMap="BaseResultMap" parameterType="PageInfo">
+		select
+		a.ROLE_ID, a.ROLE_NAME, a.ROLE_DUTY, a.ROLE_STATUS, a.SYSTEM_ID ,
+		b.SYSTEM_NAME as SYSTEM_NAME
+		from SYS_ROLE a , SYS_SYSTEM b
+		where 1 = 1
+		and a.SYSTEM_ID = b.SYSTEM_ID
+		<if test="condition.name != null"> and a.ROLE_NAME like #{condition.name, jdbcType=VARCHAR}
+		</if>
+
+		<if test="condition.status != null">
+			and a.ROLE_STATUS <![CDATA[=]]>
+			#{condition.status, jdbcType=TINYINT}
+		</if>
+
+		<if test="condition.systemId != null">
+			and a.SYSTEM_ID <![CDATA[=]]>
+			#{condition.systemId, jdbcType=VARCHAR}
+		</if>
+	</select>
+
+	<!-- 根据 账户 ID  ，查询 当前账户，关联的角色列表 -->
+	<select id="findPageConditionByAccountId" resultMap="BaseResultMap" parameterType="PageInfo">
+		select
+		a.ROLE_ID, a.ROLE_NAME, a.ROLE_DUTY, a.ROLE_STATUS, a.SYSTEM_ID ,
+		b.SYSTEM_NAME as SYSTEM_NAME
+		from SYS_ROLE a , SYS_SYSTEM b
+		where 1 = 1
+		and a.SYSTEM_ID = b.SYSTEM_ID
+		<if test="condition.accountId != null">
+			and a.ROLE_ID in ( select c.role_id from SYS_RA_RELATIONSHIP c where c.ACCOUNT_ID <![CDATA[=]]> #{condition.accountId, jdbcType=VARCHAR})
+		</if>
+		<if test="condition.name != null"> 
+			and a.ROLE_NAME like #{condition.name, jdbcType=VARCHAR}
+		</if>
+
+		<if test="condition.status != null">
+			and a.ROLE_STATUS <![CDATA[=]]>
+			#{condition.status, jdbcType=TINYINT}
+		</if>
+
+		<if test="condition.systemId != null">
+			and a.SYSTEM_ID <![CDATA[=]]>
+			#{condition.systemId, jdbcType=VARCHAR}
+		</if>
+	</select>
+
+
+	<!-- 根据 资源 ID  ，查询 当前资源，关联的角色列表 -->
+	<select id="findPageConditionByResourceId" resultMap="BaseResultMap" parameterType="PageInfo">
+		select
+		a.ROLE_ID, a.ROLE_NAME, a.ROLE_DUTY, a.ROLE_STATUS, a.SYSTEM_ID ,
+		b.SYSTEM_NAME as SYSTEM_NAME
+		from SYS_ROLE a 
+		left join  SYS_SYSTEM b on a.SYSTEM_ID = b.SYSTEM_ID
+		where 1 = 1
+		
+		<if test="condition.functionId != null">
+			and a.ROLE_ID in ( select d.role_id from SYS_RF_RELATIONSHIP d where d.FUN_ID <![CDATA[=]]> #{condition.functionId, jdbcType=VARCHAR})
+		</if>
+		
+		<if test="condition.resourceId != null">
+			and a.ROLE_ID in ( select c.role_id from SYS_RR_RELATIONSHIP c where c.RESOURCE_ID <![CDATA[=]]> #{condition.resourceId, jdbcType=VARCHAR})
+		</if>
+		<if test="condition.name != null"> 
+			and a.ROLE_NAME like #{condition.name, jdbcType=VARCHAR}
+		</if>
+
+		<if test="condition.status != null">
+			and a.ROLE_STATUS <![CDATA[=]]>
+			#{condition.status, jdbcType=TINYINT}
+		</if>
+		<if test="condition.systemId != null">
+			and a.SYSTEM_ID <![CDATA[=]]>
+			#{condition.systemId, jdbcType=VARCHAR}
+		</if>
+	</select>
+</mapper>

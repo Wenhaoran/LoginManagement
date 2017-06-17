@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysRRRSMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap"
+		type="cn.digitalpublishing.po.system.SysRoleResourceRelationship">
+		<id column="R_RR_ID" property="id" jdbcType="BIGINT" />
+		<result column="ROLE_ID" property="roleId" jdbcType="VARCHAR" />
+		<result column="RESOURCE_ID" property="resourceId" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		R_RR_ID, ROLE_ID, RESOURCE_ID
+	</sql>
+
+	<!-- SYS_RR_RELATIONSHIP -->
+
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		SYS_RR_RELATIONSHIP
+		where R_RR_ID = #{id,jdbcType=VARCHAR}
+	</delete>
+
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_RR_RELATIONSHIP
+		where R_RR_ID = #{id,jdbcType=VARCHAR}
+	</select>
+
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_RR_RELATIONSHIP
+		where 1=1
+		<if test="id != null">
+			and R_RR_ID = #{id,jdbcType=VARCHAR}
+		</if>
+		<if test="resourceId != null">
+			and RESOURCE_ID = #{resourceId,jdbcType=VARCHAR}
+		</if>
+		<if test="roleId != null">
+			and ROLE_ID = #{roleId,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+
+	<insert id="insert"
+		parameterType="cn.digitalpublishing.po.system.SysRoleResourceRelationship">
+		insert into SYS_RR_RELATIONSHIP
+		(R_RR_ID, ROLE_ID,
+		RESOURCE_ID)
+		values
+		(replace(uuid(),'-',''), #{roleId,jdbcType=VARCHAR},
+		#{resourceId,jdbcType=VARCHAR})
+	</insert>
+
+</mapper>

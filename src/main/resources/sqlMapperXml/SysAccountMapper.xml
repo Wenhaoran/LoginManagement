@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysAccountMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap" type="cn.digitalpublishing.po.system.SysAccount">
+		<id column="account_id" property="id" jdbcType="BIGINT" />
+		<result column="account_name" property="name" jdbcType="VARCHAR" />
+		<result column="account_pwd" property="pass" jdbcType="VARCHAR" />
+		<result column="account_encryption" property="encryption" jdbcType="TINYINT" />
+		<result column="employee_id" property="employeeId" jdbcType="VARCHAR" />
+		<result column="employee_name" property="employeeName" jdbcType="VARCHAR" />
+		<result column="account_type" property="type" jdbcType="TINYINT" />
+		<result column="account_level" property="level" jdbcType="TINYINT" />
+		<result column="account_status" property="status" jdbcType="TINYINT" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		account_id, account_name, account_pwd, account_encryption, employee_id,
+		employee_name, account_type, account_level, account_status
+	</sql>
+	
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from sys_account
+		where account_id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+	     select 
+	    <include refid="Base_Column_List" />
+	    from 
+	    	sys_account 
+	    where 
+	    	1=1 
+	</select>
+
+	<update id="updateById" parameterType="cn.digitalpublishing.po.system.SysAccount">
+		update sys_account
+		<set>
+			<if test="name != null">
+				account_name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="pass != null">
+				account_pwd = #{pass,jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				account_type = #{type,jdbcType=TINYINT},
+			</if>
+			<if test="level != null">
+				account_level = #{level,jdbcType=TINYINT},
+			</if>
+			<if test="encryption != null">
+				account_encryption = #{encryption,jdbcType=TINYINT},
+			</if>
+			<if test="status != null">
+				account_status = #{status,jdbcType=TINYINT},
+			</if>
+			
+		</set>
+		where account_id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 插入账户信息 -->
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysAccount">
+		insert into sys_account
+		(account_id, account_name, account_pwd, account_encryption, account_type,
+		account_level, account_status,inserttime)
+		values
+		(replace(uuid(),'-',''), #{name,jdbcType=VARCHAR}, #{pass,jdbcType=VARCHAR},
+		#{encryption,jdbcType=TINYINT},
+		#{type,jdbcType=TINYINT},#{level,jdbcType=TINYINT},#{status,jdbcType=TINYINT},NOW())
+	</insert>
+
+	<!-- 根据用户名和密码，查询账户 -->
+	<select id="getByUidAndPwd" resultMap="BaseResultMap"
+		parameterType="java.util.Map">
+		select
+		<include refid="Base_Column_List" />
+		from
+		sys_account
+		where
+		1=1
+		<if test="username != null"> and account_name = #{username,jdbcType=VARCHAR}</if>
+		<if test="password != null"> and account_pwd = #{password,jdbcType=VARCHAR}</if>
+		<if test="status != null"> and account_status = #{status,jdbcType=TINYINT}</if>
+	</select>
+
+	<!-- 列表查询集合 -->
+	<select id="findPageCondition" resultMap="BaseResultMap"
+		parameterType="PageInfo">
+		select
+		<include refid="Base_Column_List" />
+		from sys_account
+		where 1 = 1
+		<if test="condition.roleId != null">
+			AND account_id in
+			( select account_id from SYS_RA_RELATIONSHIP  where ROLE_ID <![CDATA[=]]> #{condition.roleId, jdbcType=VARCHAR})
+		</if>
+		
+		<if test="condition.moduleId != null">
+			AND account_id in
+			( select ACCOUNT_ID from sys_am_relationship  where module_id <![CDATA[=]]> #{condition.moduleId, jdbcType=VARCHAR})
+		</if>
+		
+		<if test="condition.name != null"> 
+			and account_name like #{condition.name, jdbcType=VARCHAR}
+		</if>
+
+		<if test="condition.status != null">
+			and account_status <![CDATA[=]]>
+			#{condition.status, jdbcType=TINYINT}
+		</if>
+
+		<if test="condition.level != null">
+			and account_level <![CDATA[=]]>
+			#{condition.level, jdbcType=TINYINT}
+		</if>
+
+		<if test="condition.type != null">
+			and account_type <![CDATA[=]]>
+			#{condition.type, jdbcType=TINYINT}
+		</if>
+	</select>
+
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		sys_account
+		where account_id = #{id,jdbcType=VARCHAR}
+	</delete>
+
+</mapper>

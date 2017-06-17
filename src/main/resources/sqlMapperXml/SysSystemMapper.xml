@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysSystemMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap" type="cn.digitalpublishing.po.system.SysSystem">
+		<id column="SYSTEM_ID" property="id" jdbcType="BIGINT" />
+		<result column="SYSTEM_NAME" property="name" jdbcType="VARCHAR" />
+		<result column="SYSTEM_CODE" property="code" jdbcType="VARCHAR" />
+		<result column="SYSTEM_STATUS" property="status" jdbcType="TINYINT" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		SYSTEM_ID, SYSTEM_NAME, SYSTEM_CODE, SYSTEM_STATUS
+	</sql>
+	
+	<update id="updateById" parameterType="cn.digitalpublishing.po.system.SysSystem">
+		update SYS_SYSTEM
+		<set>
+			<if test="name != null">
+				SYSTEM_NAME = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="code != null">
+				SYSTEM_CODE = #{code,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				SYSTEM_STATUS = #{status,jdbcType=TINYINT},
+			</if>
+			
+		</set>
+		where SYSTEM_ID = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_SYSTEM
+		where SYSTEM_ID = #{id,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 分页查询发件箱管理信息 -->
+	<select id="findPageCondition" resultMap="BaseResultMap"
+		parameterType="PageInfo">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_SYSTEM
+		where 1 = 1
+		<if test="condition.name != null"> and SYSTEM_NAME like #{condition.name, jdbcType=VARCHAR}
+		</if>
+
+		<if test="condition.code != null"> and SYSTEM_CODE like #{condition.code, jdbcType=VARCHAR}
+		</if>
+
+		<if test="condition.status != null">
+			and SYSTEM_STATUS <![CDATA[=]]>
+			#{condition.status, jdbcType=TINYINT}
+		</if>
+	</select>
+
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+		<include refid="Base_Column_List" />
+		from
+		SYS_SYSTEM
+		where
+		1=1
+		<if test="name != null"> and SYSTEM_NAME = #{name, jdbcType=VARCHAR}</if>
+		<if test="code != null"> and SYSTEM_CODE = #{code, jdbcType=VARCHAR}</if>
+		<if test="status != null">
+			and SYSTEM_STATUS <![CDATA[=]]>
+			#{status, jdbcType=TINYINT}
+		</if>
+	</select>
+
+
+	<!-- INSERT INTO `sys_system` VALUES (replace(uuid(),'-',''), '英捷特门户权限控制系统', 
+		'webgate', '1', NOW()); -->
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysSystem">
+		insert into SYS_SYSTEM
+		(SYSTEM_ID, SYSTEM_NAME, SYSTEM_CODE, SYSTEM_STATUS , inserttime)
+		values
+		(replace(uuid(),'-',''), #{name,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR},
+		#{status,jdbcType=TINYINT},NOW())
+	</insert>
+
+
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysRARSMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap"
+		type="cn.digitalpublishing.po.system.SysRoleAccountRelationship">
+		<id column="R_RA_ID" property="id" jdbcType="BIGINT" />
+		<result column="ROLE_ID" property="roleId" jdbcType="VARCHAR" />
+		<result column="ACCOUNT_ID" property="accountId" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		R_RA_ID, ROLE_ID, ACCOUNT_ID
+	</sql>
+	
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		SYS_RA_RELATIONSHIP
+		where R_RA_ID = #{id,jdbcType=VARCHAR}
+	</delete>
+
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_RA_RELATIONSHIP
+		where R_RA_ID = #{id,jdbcType=VARCHAR}
+	</select>
+
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select 
+			<include refid="Base_Column_List" />
+		from 
+			SYS_RA_RELATIONSHIP 
+		where 
+			1=1
+		<if test="accountId != null"> 
+			and ACCOUNT_ID = #{accountId,jdbcType=VARCHAR}
+		</if>
+		<if test="roleId != null"> 
+			and ROLE_ID = #{roleId,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysRoleAccountRelationship">
+		insert into SYS_RA_RELATIONSHIP
+		(R_RA_ID, ROLE_ID, ACCOUNT_ID,inserttime)
+		values
+		(replace(uuid(),'-',''), #{roleId,jdbcType=VARCHAR}, #{accountId,jdbcType=VARCHAR},NOW())
+	</insert>
+	
+	
+
+</mapper>

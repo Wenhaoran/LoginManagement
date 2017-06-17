@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysPageMapper">
+
+	<resultMap id="BaseResultMap" type="cn.digitalpublishing.po.system.SysPage">
+		<id column="PAGE_ID" property="id" jdbcType="BIGINT" />
+		<result column="PAGE_NAME" property="name" jdbcType="VARCHAR" />
+		<result column="PAGE_CODE" property="code" jdbcType="VARCHAR" />
+		<result column="PAGE_PATH" property="path" jdbcType="VARCHAR" />
+		<result column="PAGE_SPECIAL" property="special" jdbcType="VARCHAR" />
+		<result column="RESOURCE_ID" property="resourceId" jdbcType="VARCHAR" />
+		<result column="RESOURCE_NAME" property="resourceName" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		PAGE_ID, PAGE_NAME, PAGE_CODE, PAGE_PATH, PAGE_SPECIAL, RESOURCE_ID
+	</sql>
+	
+	<!-- SYS_PAGE -->
+	
+	<update id="updateById" parameterType="cn.digitalpublishing.po.system.SysPage">
+		update SYS_PAGE
+		<set>
+			<if test="name != null">
+				PAGE_NAME = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="code != null">
+				PAGE_CODE = #{code,jdbcType=VARCHAR},
+			</if>
+			<if test="path != null">
+				PAGE_PATH = #{path,jdbcType=TINYINT},
+			</if>
+			<if test="special != null">
+				PAGE_SPECIAL = #{special,jdbcType=TINYINT},
+			</if>
+		</set>
+		where PAGE_ID = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_PAGE
+		where PAGE_ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+			a.PAGE_ID, 
+			a.PAGE_NAME, 
+			a.PAGE_CODE, 
+			a.PAGE_PATH, 
+			a.PAGE_SPECIAL, 
+			a.RESOURCE_ID,
+			c.resource_name as RESOURCE_NAME
+		from 
+			SYS_PAGE a
+		left join sys_resource c on a.RESOURCE_ID = c.RESOURCE_ID
+		where 
+			1=1
+		<if test="id != null">
+			and a.PAGE_ID = #{id,jdbcType=VARCHAR}
+		</if>
+		<if test="name != null">
+			and a.PAGE_NAME = #{name,jdbcType=VARCHAR}
+		</if>
+		<if test="code != null">
+			and a.PAGE_CODE = #{code,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		SYS_PAGE
+		where PAGE_ID = #{id,jdbcType=VARCHAR}
+	</delete>
+	
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysPage">
+		insert into SYS_PAGE
+		(PAGE_ID, 
+		PAGE_NAME,
+		PAGE_CODE,
+		PAGE_PATH,
+		PAGE_SPECIAL,
+		RESOURCE_ID,
+		inserttime)
+		values
+		(replace(uuid(),'-',''), 
+		#{name,jdbcType=VARCHAR},
+		#{code,jdbcType=VARCHAR},
+		#{path,jdbcType=VARCHAR},
+		#{special,jdbcType=VARCHAR},
+		#{resourceId,jdbcType=VARCHAR},
+		NOW()
+		)
+	</insert>
+
+	<!-- 分页查询发件箱管理信息 -->
+	<select id="findPageCondition" resultMap="BaseResultMap" parameterType="PageInfo">
+		select
+			a.PAGE_ID, 
+			a.PAGE_NAME, 
+			a.PAGE_CODE, 
+			a.PAGE_PATH, 
+			a.PAGE_SPECIAL, 
+			a.RESOURCE_ID,
+			c.RESOURCE_NAME as RESOURCE_NAME
+		from 
+			SYS_PAGE a 
+		left join 
+			sys_resource c
+		on 
+			a.RESOURCE_ID = c.RESOURCE_ID
+		where 1 = 1
+		<if test="condition.resourceId != null"> 
+			and a.RESOURCE_ID like #{condition.resourceId, jdbcType=VARCHAR}
+		</if>
+		<if test="condition.code != null">
+			and a.PAGE_CODE <![CDATA[=]]> #{condition.code, jdbcType=TINYINT}
+		</if>
+		<if test="condition.name != null">
+			and a.PAGE_NAME <![CDATA[=]]> #{condition.name, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	
+</mapper>

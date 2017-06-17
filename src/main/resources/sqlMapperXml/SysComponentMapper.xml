@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.digitalpublishing.mapper.system.SysComponentMapper">
+	<!-- <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/> -->
+
+	<resultMap id="BaseResultMap" type="cn.digitalpublishing.po.system.SysComponent">
+		<id column="COMPONENT_ID" property="id" jdbcType="BIGINT" />
+		<result column="COMPONENT_NAME" property="name" jdbcType="VARCHAR" />
+		<result column="COMPONENT_CODE" property="code" jdbcType="VARCHAR" />
+		<result column="COMPONENT_ADDR" property="address" jdbcType="VARCHAR" />
+		<result column="COMPONENT_PORT" property="port" jdbcType="VARCHAR" />
+		<result column="COMPONENT_STATUS" property="status" jdbcType="TINYINT" />
+		<result column="SYSTEM_ID" property="systemId" jdbcType="VARCHAR" />
+		
+		<result column="SYSTEM_NAME" property="systemName" jdbcType="VARCHAR" />
+		<result column="COMPONENT_DEPLOY_CODE" property="deployCode" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		COMPONENT_ID, COMPONENT_NAME, COMPONENT_CODE, COMPONENT_ADDR, COMPONENT_PORT,
+		COMPONENT_STATUS, SYSTEM_ID, COMPONENT_DEPLOY_CODE
+	</sql>
+	
+	<!-- SYS_COMPONENT -->
+	
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from
+		SYS_COMPONENT
+		where COMPONENT_ID = #{id,jdbcType=VARCHAR}
+	</delete>
+	
+	<insert id="insert" parameterType="cn.digitalpublishing.po.system.SysComponent">
+		insert into SYS_COMPONENT
+		(COMPONENT_ID, 
+		COMPONENT_NAME, 
+		COMPONENT_CODE, 
+		COMPONENT_ADDR, 
+		COMPONENT_PORT,
+		COMPONENT_STATUS, 
+		SYSTEM_ID, 
+		COMPONENT_DEPLOY_CODE,
+		inserttime)
+		values
+		(replace(uuid(),'-',''), 
+		#{name,jdbcType=VARCHAR},
+		#{code,jdbcType=VARCHAR},
+		#{address,jdbcType=VARCHAR},
+		#{port,jdbcType=VARCHAR},
+		#{status,jdbcType=TINYINT},
+		#{systemId,jdbcType=VARCHAR},
+		#{deployCode,jdbcType=VARCHAR},
+		NOW())
+	</insert>
+	
+	<!-- 查询集合 -->
+	<select id="findListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+	     select 
+	    <include refid="Base_Column_List" />
+	    from 
+	    	SYS_COMPONENT 
+	    where 
+	    	1=1 
+	    	<if test="systemId != null"> and SYSTEM_ID = #{systemId, jdbcType=VARCHAR}</if>
+	    	<if test="status != null"> and COMPONENT_STATUS = #{status, jdbcType=VARCHAR}</if>
+	</select>
+
+	<!-- 更新单个数据 -->
+	<update id="updateById" parameterType="cn.digitalpublishing.po.system.SysComponent">
+		update SYS_COMPONENT
+		<set>
+			<if test="name != null">
+				COMPONENT_NAME = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="code != null">
+				COMPONENT_CODE = #{code,jdbcType=VARCHAR},
+			</if>
+			<if test="address != null">
+				COMPONENT_ADDR = #{address,jdbcType=VARCHAR},
+			</if>
+			<if test="port != null">
+				COMPONENT_PORT = #{port,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				COMPONENT_STATUS = #{status,jdbcType=TINYINT},
+			</if>
+			<if test="systemId != null">
+				SYSTEM_ID = #{systemId,jdbcType=VARCHAR},
+			</if>
+			<if test="deployCode != null">
+				COMPONENT_DEPLOY_CODE = #{deployCode,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where COMPONENT_ID = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<!-- 根据ID，查询单个 -->
+	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SYS_COMPONENT
+		where COMPONENT_ID = #{id,jdbcType=VARCHAR}
+	</select>
+
+
+	<!-- 分页查询方法 -->
+	<select id="findPageCondition" resultMap="BaseResultMap"
+		parameterType="PageInfo">
+		select
+		a.COMPONENT_ID, a.COMPONENT_NAME, a.COMPONENT_CODE, a.COMPONENT_ADDR,
+		a.COMPONENT_PORT, a.COMPONENT_STATUS,
+		a.SYSTEM_ID, a.COMPONENT_DEPLOY_CODE,
+		b.SYSTEM_NAME as SYSTEM_NAME
+		from SYS_COMPONENT a , SYS_SYSTEM b
+		where 1 = 1
+		and a.SYSTEM_ID = b.SYSTEM_ID
+		<if test="condition.code != null"> and a.COMPONENT_CODE like #{condition.code,
+			jdbcType=VARCHAR}</if>
+
+		<if test="condition.name != null">
+			and a.COMPONENT_NAME <![CDATA[=]]>
+			#{condition.name, jdbcType=TINYINT}
+		</if>
+
+		<if test="condition.status != null">
+			and a.COMPONENT_STATUS <![CDATA[=]]>
+			#{condition.status, jdbcType=TINYINT}
+		</if>
+
+		<if test="condition.systemId != null">
+			and a.SYSTEM_ID <![CDATA[=]]>
+			#{condition.systemId, jdbcType=TINYINT}
+		</if>
+	</select>
+
+</mapper>
