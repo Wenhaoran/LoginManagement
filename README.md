@@ -8,3 +8,5 @@ maven , mybatis , springMVC
 easyui ,
 数据库是，mysql
 忙完这段时间后， 会重构 webgate 项目，打算拆成 前后端完全分离的两个项目。 目标打算前段采用MVVM 框架。
+
+项目所需的 数据库 下载地址：http://download.csdn.net/download/u012246342/10127440
