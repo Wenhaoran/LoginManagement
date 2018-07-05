@@ -10,3 +10,5 @@ easyui ,
 忙完这段时间后， 会重构 webgate 项目，打算拆成 前后端完全分离的两个项目。 目标打算前段采用MVVM 框架。
 
 项目所需的 数据库 下载地址：http://download.csdn.net/download/u012246342/10127440
+
+在线预览地址：http://www.rbqhub.com/webgate
